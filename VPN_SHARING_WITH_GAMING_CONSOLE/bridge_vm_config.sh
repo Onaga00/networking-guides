@@ -62,7 +62,7 @@ iptables -t nat -A POSTROUTING -o "${VPN_IF}" -j MASQUERADE
 echo "==> NAT: DMZ - forward all other unsolicited inbound traffic from ${VPN_IF} to PS4 (${CONSOLE_IP})"
 iptables -t nat -A PREROUTING -i "${VPN_IF}" -j DNAT --to-destination "${CONSOLE_IP}"
 
-echo "==> FORWARD: LAN(PS4) -> VPN"
+echo "==> FORWARD: LAN(console) -> VPN"
 iptables -A FORWARD -i "${BRIDGED_LAN_IF}" -o "${VPN_IF}" -j ACCEPT
 
 echo "==> FORWARD: VPN -> LAN, established/related (return traffic)"
