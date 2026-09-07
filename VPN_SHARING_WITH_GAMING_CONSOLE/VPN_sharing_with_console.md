@@ -31,7 +31,11 @@ If the VM feels too slow, try the following:
 
 Make sure that under **VMware → Edit → Virtual Network Editor** both the **Bridged** and **NAT** virtual networks exist, with DHCP enabled on the NAT network. Add them if they are missing.
 
-## 2. Configure the Network Interfaces
+## 2. Install sudo if it's not already present and initialize the Network Interfaces
+
+```bash
+apt-get install sudo -y
+```
 
 Boot the virtual machine and log in as `root`. Check that both network interfaces are present:
 
@@ -96,10 +100,12 @@ sudo systemctl enable --now wg-quick@wg0
 
 ## 7. Configure iptables Forwarding
 
-Edit with nano (or any other text editor) the constants in the `bridge_vm_config.sh` script to match your network's values, save it on the VM, then run it as root:
+Install the script `bridge_vm_config.sh` and edit its parameters with nano (or any other text editor) to make it match your network's config, save it on the VM, then run it as root:
 
 ```bash
-sudo bridge_vm_config.sh
+apt install curl
+sudo curl -O https://raw.githubusercontent.com/Onaga00/networking-guides/refs/heads/main/VPN_SHARING_WITH_GAMING_CONSOLE/bridge_vm_config.sh
+sudo bash bridge_vm_config.sh
 sudo netfilter-persistent save
 ```
 
@@ -157,3 +163,5 @@ sudo reboot
 | `sudo ip link set <interface_name> up` | Turn on a network interface |
 | `ip a` | Show all network interfaces |
 | `curl ifconfig.me` | Display your public IP address |
+| `sudo iptables -L` | Inspect routing rules |
+| `cat /proc/sys/net/ipv4/ip_forward` | Verify if IP forwarding is active ( 1 = true, 0 = false) |
