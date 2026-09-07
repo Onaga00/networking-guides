@@ -36,16 +36,15 @@ iface ${BRIDGED_LAN_IF} inet static
     netmask ${LAN_NETMASK}
 EOF
 
-echo "==> Enabling IPv4 forwarding (runtime)"
-sysctl -w net.ipv4.ip_forward=1
 
 echo "==> Persisting IPv4 forwarding across reboots"
-if ! grep -q '^net.ipv4.ip_forward' /etc/sysctl.conf 2>/dev/null; then
-    echo 'net.ipv4.ip_forward=1' >> /etc/sysctl.conf
-else
-    sed -i 's/^net.ipv4.ip_forward.*/net.ipv4.ip_forward=1/' /etc/sysctl.conf
-fi
-sysctl -p
+sudo tee /etc/sysctl.d/99-ip-forward.conf > /dev/null << 'EOF'
+# Enable IPv4 packet forwarding
+net.ipv4.ip_forward = 1
+EOF
+echo "==> Applying sysctl settings"
+sudo sysctl --system
+
 
 echo "==> Flushing existing rules"
 iptables -F
@@ -69,7 +68,7 @@ iptables -A FORWARD -i "${BRIDGED_LAN_IF}" -o "${VPN_IF}" -j ACCEPT
 echo "==> FORWARD: VPN -> LAN, established/related (return traffic)"
 iptables -A FORWARD -i "${VPN_IF}" -o "${BRIDGED_LAN_IF}" -m state --state RELATED,ESTABLISHED -j ACCEPT
 
-echo "==> FORWARD: VPN -> PS4, allow new unsolicited connections (DMZ / NAT type 2)"
+echo "==> FORWARD: VPN -> CONSOLE, allow new unsolicited connections (DMZ / NAT type 2)"
 iptables -A FORWARD -i "${VPN_IF}" -o "${BRIDGED_LAN_IF}" -d "${CONSOLE_IP}" -j ACCEPT
 
 echo "==> Done"
